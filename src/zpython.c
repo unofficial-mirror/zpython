@@ -1,3 +1,4 @@
+#include "config.h"
 #define MODULE
 #include <zsh/zsh.mdh>
 #undef MODULE
@@ -184,7 +185,7 @@ ZshEval(UNUSED(PyObject *self), PyObject *obj)
     if (!(command = get_chars(obj, PyMem_Malloc)))
 	return NULL;
 
-    execstring(command, 1, 0, "zpython");
+    execstring(command, 1, 0, ZPYTHON_COMMAND_NAME);
 
     PyMem_Free(command);
 
@@ -1710,7 +1711,7 @@ static struct PyModuleDef zshmodule = {
 #endif
 
 static struct builtin bintab[] = {
-    BUILTIN("zpython", 0, do_zpython,  1, 1, 0, NULL, NULL),
+    BUILTIN(ZPYTHON_COMMAND_NAME, 0, do_zpython,  1, 1, 0, NULL, NULL),
 };
 
 static struct features module_features = {
@@ -1866,3 +1867,6 @@ finish_(UNUSED(Module m))
 {
     return 0;
 }
+
+/* vim: ts=8:sts=4:sw=4:noet:
+ */
