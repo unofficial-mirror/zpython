@@ -1,0 +1,128 @@
+manpage(ZPYTHON)(1)()()
+manpagename(zpython)(Python bindings for zsh)
+
+sect(Description)
+The tt(zsh/zpython) module provides zpython builtin that runs python2 code
+from zsh command-line and zsh python module that is able to define special
+parameters.
+
+Note: by "string" it is meant either tt(str) or tt(unicode) object LPAR()python
+2 RPAR() or tt(bytes) object. Any strings received from zsh are converted to
+tt(str) LPAR()python 2 RPAR() or tt(bytes) LPAR()python 3 RPAR(): zsh strings
+can hold arbitrary data, not only valid unicode, thus tt(str) objects is the
+wrong choice on python 3.
+
+sect(Commands)
+startitem()
+findex(zpython)
+item(tt(zpython) var(code))(
+Execute python code that is present in var(code). Code is executed as if it was
+in python file.
+)
+
+sect(zsh module)
+To manipulate zsh structures
+
+cindex(python module, zsh)
+cindex(zsh python module)
+pindex(zsh.eval)
+item(tt(zsh.eval))(
+Evaluate zsh code without launching subshell. Output is not captured.
+)
+pindex(zsh.last_exit_code)
+item(tt(zsh.last_exit_code))(
+Returns the integer containing exit code of last launched command.
+)
+pindex(zsh.pipestatus)
+item(tt(zsh.pipestatus))(
+Returns the list of integers containing exit codes of all commands in last 
+pipeline.
+)
+pindex(zsh.columns)
+item(tt(zsh.columns))(
+Returns the number of columns for this terminal session.
+)
+pindex(zsh.lines)
+item(tt(zsh.lines))(
+Returns the number of lines for this terminal session.
+)
+pindex(zsh.subshell)
+item(tt(zsh.subshell))(
+Returns subshell recursion depth.
+)
+pindex(zsh.getvalue)
+item(tt(zsh.getvalue)LPAR()var(param)RPAR())(
+Returns parameter value. Returned types: str for scalars, long integers for
+integers, float for floating-point integers, list of str for arrays and
+dict with str keys and values for associative arrays.
+)
+pindex(zsh.setvalue)
+item(tt(zsh.setvalue)LPAR()var(param), var(value)RPAR())(
+Set parameter value. Supported types: str, long, int, dict and anything
+implementing sequence protocol.
+)
+pindex(zsh.set_special)
+pindex(zsh.set_special_string)
+item(tt(zsh.set_special_string)LPAR()var(param), var(value)RPAR())(
+Bind object var(value) to parameter named var(param). When this parameter is
+accessed from zsh it returns result from __str__ object method. When parameter
+is set in zsh __call__ object method is called. If __call__ method is absent
+then variable is considered to be read-only.
+)
+pindex(zsh.set_special_integer)
+item(tt(zsh.set_special_integer)LPAR()var(param), var(value)RPAR())(
+Bind object var(value) to parameter named var(param). When this parameter is
+accessed from zsh it returns result from coercing object to long integer. When
+parameter is set in zsh __call__ object method is called receiving a long value.
+If __call__ method is absent then variable is considered to be read-only.
+)
+pindex(zsh.set_special_float)
+item(tt(zsh.set_special_float)LPAR()var(param), var(value)RPAR())(
+Bind object var(value) to parameter named var(param). When this parameter is
+accessed from zsh it returns result from coercing object to float. When
+parameter is set in zsh __call__ object method is called receiving a float
+value. If __call__ method is absent then variable is considered to be read-only.
+)
+pindex(zsh.set_special_array)
+item(tt(zsh.set_special_array)LPAR()var(param), var(value)RPAR())(
+Bind object var(value) to parameter named var(param). Parameter must implement
+sequence protocol, each item in sequence must have str type. When parameter is
+accessed in zsh sequence is completely converted to zsh array, no matter how
+many values are actually needed. When parameter is set in zsh __call__ object
+method is called receiving a list of str. If __call__ method is absent then
+variable is considered to be read-only.
+)
+pindex(zsh.set_special_hash)
+item(tt(zsh.set_special_hash)LPAR()var(param), var(value)RPAR())(
+Bind object var(value) to parameter named var(param). Parameter must implement
+mapping protocol, be iterable by keys, each key must be a string and each value
+object must be a string or coercible to it. Unlike other special parameters
+sequence protocol is used to assign items or the whole array, so no need to
+implement __call__ method. In case it is needed array is cleared by iterating
+over all keys and deleting them.
+)
+pindex(zsh.environ)
+item(tt(zsh.environ))(
+Object that provides access to exported variables. Is an incomplete drop-in 
+replacement for var(os.environ) supporting the following methods:
+
+item(tt(keys)LPAR()RPAR())(
+Iterator listing variable names.)
+item(tt(values)LPAR()RPAR())(
+Iterator listing variable values.)
+item(tt(items)LPAR()RPAR())(
+Iterator listing LPAR()var(key), var(value)RPAR() pairs.)
+item(tt(copy)LPAR()RPAR())(
+Returns a Python dictionary with all variables. Equivalent to 
+tt(dict)tt(LPAR()zsh.environ.items LPAR()RPAR()RPAR()).)
+item(tt(pop)LPAR()var(key)[, var(default)]RPAR())(
+Remove and return given variable. If variable is not present then function 
+returns its second argument. If it is not given as well then raises 
+tt(KeyError).)
+item(tt(popitem)LPAR()RPAR())(
+Remove one of the variables and returns tuple LPAR()var(name), var(value)RPAR(). 
+Raises KeyError if there are no variables.)
+item(tt(get)LPAR()var(key)[, var(default)=None]RPAR())(
+Return environment variable value or second argument if it is not found.)
+)
+enditem()

@@ -14,10 +14,11 @@ HOMEPAGE="https://bitbucket.org/ZyX_I/zpython"
 LICENSE=""
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE=""
+IUSE="doc"
 
 DEPEND="${DEPEND}
 	${PYTHON_DEPS}
+	doc? ( app-text/yodl )
 "
 RDEPEND="${DEPEND}
 	app-shells/zsh
@@ -29,4 +30,11 @@ src_configure() {
 	mycmakeargs="-DPython_ADDITIONAL_VERSIONS=${PYTHON_SINGLE_TARGET//_/.}"
 	mycmakeargs="${MYCMAKEARGS/python}"
 	cmake-utils_src_configure
+}
+
+src_compile() {
+	if use doc ; then
+		cmake-utils_src_compile doc
+	fi
+	cmake-utils_src_compile
 }
