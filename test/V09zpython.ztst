@@ -1,0 +1,494 @@
+%prep
+  if ( zmodload -i lib${ZPYTHON} ) >/dev/null 2>&1; then
+    zmodload -i lib${ZPYTHON}
+    ${ZPYTHON} 'import zsh, sys, os'
+    ${ZPYTHON} "sys.path.append(${(qqq)MODPATH})"
+    ${ZPYTHON} 'from ztstutil import *'
+    functio exe() { { eval "$@" } always { TRY_BLOCK_ERROR=0 } }
+  else
+    ZTST_unimplemented="The module ${ZPYTHON} is not available"
+  fi
+%test
+  ${ZPYTHON} 'print("Test stdout")'
+0:Stdout test
+>Test stdout
+
+  ${ZPYTHON} 'import sys; sys.stderr.write("Test stderr\n")'
+0:Stderr test
+?Test stderr
+
+  ${ZPYTHON} 'raise NotImplementedError()'
+1:Exception test
+*?*
+?*
+?NotImplementedError
+
+  (exit 5)
+  ${ZPYTHON} 'print(zsh.last_exit_code())'
+0:Last exit code
+>5
+
+  function e() { return $1 }
+  e 5 | e 6 | e 7
+  ${ZPYTHON} 'print(" ".join((str(i) for i in zsh.pipestatus())))'
+0:Pipe status
+>5 6 7
+
+  echo ABC-$ABC
+  ${ZPYTHON} 'zsh.eval("ABC=2")'
+  echo ABC-$ABC
+0:zsh.eval
+>ABC-
+>ABC-2
+
+  ${ZPYTHON} 'print(zsh.subshell())'
+0:Subshell test
+>0
+
+  STRING=abc
+  integer INT=5
+  float FLOAT=10.5
+  typeset -a ARRAY
+  ARRAY=(a b c d)
+  typeset -A HASH
+  HASH=(a b c d)
+  ${ZPYTHON} 'print(repr(zsh.getvalue("STRING")))'
+  ${ZPYTHON} 'print(repr(zsh.getvalue("INT")))'
+  ${ZPYTHON} 'print(repr(zsh.getvalue("FLOAT")))'
+  ${ZPYTHON} 'print(repr(zsh.getvalue("ARRAY")))'
+  ${ZPYTHON} 'print(repr(sorted(zsh.getvalue("HASH").items())))'
+0:getvalue test
+*>(|b)'abc'
+>5(L|)
+>10.5
+>\[(|b)'a', (|b)'b', (|b)'c', (|b)'d'\]
+>\[\((|b)'a', (|b)'b'\), \((|b)'c', (|b)'d'\)\]
+
+  ${ZPYTHON} 'import sys'
+  ${ZPYTHON} 'zsh.setvalue("STRING", "def")'
+  ${ZPYTHON} 'zsh.setvalue("INT", 3)'
+  ${ZPYTHON} 'zsh.setvalue("INT2", long(4) if sys.version_info < (3,) else 4)'
+  ${ZPYTHON} 'zsh.setvalue("FLOAT", 5.0)'
+  ${ZPYTHON} 'zsh.setvalue("ARRAY", [str(i) for i in range(5)])'
+  ${ZPYTHON} 'zsh.setvalue("DICT", {"a": "b", "c": "d"})'
+  echo $STRING
+  echo $INT
+  echo $INT2
+  printf "%.3f\\n" $FLOAT
+  echo $ARRAY
+  echo ${(kv)DICT}
+0:setvalue test
+>def
+>3
+>4
+>5.000
+>0 1 2 3 4
+>a b c d
+
+  ${ZPYTHON} 'zsh.set_special_string("ZPYTHON_STRING", Str())'
+  ${ZPYTHON} 'zsh.set_special_string("ZPYTHON_STRING2", CStr())'
+  echo $ZPYTHON_STRING
+  echo $ZPYTHON_STRING
+  echo $ZPYTHON_STRING2
+  ZPYTHON_STRING2=20
+  echo $ZPYTHON_STRING2
+  ZPYTHON_STRING2+=2
+  echo $ZPYTHON_STRING2
+0:set_special_string test
+>1
+>2
+>1
+>-18
+>156
+
+  ${ZPYTHON} 'zsh.set_special_integer("ZPYTHON_INT", Int())'
+  ${ZPYTHON} 'zsh.set_special_integer("ZPYTHON_INT2", CInt())'
+  echo $ZPYTHON_INT
+  echo $ZPYTHON_INT2
+  echo $ZPYTHON_INT2
+  ZPYTHON_INT2=8
+  echo $ZPYTHON_INT2
+  ZPYTHON_INT2+=0
+  echo $ZPYTHON_INT2
+0:set_special_integer test
+>4
+>4
+>16
+>8
+>4
+
+  ${ZPYTHON} 'zsh.set_special_float("ZPYTHON_FLOAT", Float())'
+  ${ZPYTHON} 'zsh.set_special_float("ZPYTHON_FLOAT2", CFloat())'
+  printf "%.3f\\n" $ZPYTHON_FLOAT
+  printf "%.3f\\n" $ZPYTHON_FLOAT2
+  printf "%.3f\\n" $ZPYTHON_FLOAT2
+  ZPYTHON_FLOAT2=3
+  printf "%.3f\\n" $ZPYTHON_FLOAT2
+  ZPYTHON_FLOAT2+=-4
+  printf "%.3f\\n" $ZPYTHON_FLOAT2
+0:set_special_integer test
+>2.000
+>2.000
+>4.000
+>2.000
+>8.000
+
+  ${ZPYTHON} 'zsh.set_special_array("ZPYTHON_ARRAY", Array())'
+  ${ZPYTHON} 'zsh.set_special_array("ZPYTHON_ARRAY2", CArray())'
+  ${ZPYTHON} 'zsh.set_special_array("ZPYTHON_ARRAY3", CArray())'
+  echo $ZPYTHON_ARRAY
+  echo $ZPYTHON_ARRAY
+  ZPYTHON_ARRAY2+=(a b)
+  echo $ZPYTHON_ARRAY2
+  ZPYTHON_ARRAY3=(c d)
+  echo $ZPYTHON_ARRAY3
+0:set_special_array
+>len:1
+>len:1 get:0 len:3
+>len:1 get:0 len:3 get:0 get:1 get:2 set:len:1|a|b|len:3 len:8
+>set:c|d len:2
+
+  ${ZPYTHON} 'zsh.set_special_hash("ZPYTHON_HASH", {"a": "b"} if sys.version_info < (3,) else {b"a": b"b"})'
+  echo ${(kv)ZPYTHON_HASH}
+  echo ${(k)ZPYTHON_HASH}
+  echo ${(v)ZPYTHON_HASH}
+  echo $ZPYTHON_HASH[a]
+  echo $ZPYTHON_HASH[b]
+  echo ${ZPYTHON_HASH}
+  ZPYTHON_HASH=(abc def)
+  echo ${(kv)ZPYTHON_HASH}
+  ZPYTHON_HASH+=(ghi jkl)
+  echo ${(kvo)ZPYTHON_HASH}
+0:set_special_hash: dictionary
+>a b
+>a
+>b
+>b
+>
+>b
+>abc def
+>abc def ghi jkl
+
+  ${ZPYTHON} 'zsh.set_special_hash("ZPYTHON_HASH2", Hash())'
+  echo $ZPYTHON_HASH2
+  echo $ZPYTHON_HASH2[a]
+  echo $ZPYTHON_HASH2[c]
+  ZPYTHON_HASH2[b]=d
+  echo $ZPYTHON_HASH2[acc]
+  ZPYTHON_HASH2=(b d)
+  echo $ZPYTHON_HASH2
+  ZPYTHON_HASH2+=(b def)
+  echo $ZPYTHON_HASH2[b]
+0:set_special_hash: Hash
+>i*2;[acc] b
+>b
+>None
+>i*2;[acc];[a]*3;[c]*2;[b];[b]=d;[acc]*2
+>i*2;[acc];[a]*3;[c]*2;[b];[b]=d;[acc]*2;k;![a];![b];[b]=d;i*2;[acc] d
+>def
+
+  ${ZPYTHON} 'zsh.set_special_hash("zpython_hsh", EHash())'
+  ${ZPYTHON} 'zsh.getvalue("NOT AN IDENTIFIER")'
+  ${ZPYTHON} 'zsh.getvalue("XXX_UNKNOWN_PARAMETER")'
+1:Various errors: getvalue
+# NOT AN IDENTIFIER
+*?Traceback*
+?*
+?KeyError:*
+# XXX_UNKNOWN_PARAMETER
+?Traceback*
+?*
+?IndexError:*
+
+  ${ZPYTHON} 'zsh.setvalue("NOT AN IDENTIFIER", "")'
+  ${ZPYTHON} 'zsh.setvalue("UNKNOWN_TYPE", str)'
+1:Various errors: setvalue
+# NOT AN IDENTIFIER
+*?Traceback*
+?*
+?KeyError:*
+# UNKNOWN_TYPE
+?Traceback*
+?*
+?TypeError:*
+
+  ${ZPYTHON} 'zsh.setvalue("NOT_A_STRING_ITEM", [1])'
+  ${ZPYTHON} 'zsh.setvalue("UNKNOWN_SIZE", EArray())'
+1:Various errors: setvalue (arrays)
+# NOT_A_STRING_ITEM
+*?Traceback*
+?*
+?TypeError:*
+# UNKNOWN_SIZE
+?Traceback*
+?*
+?ValueError:*
+
+  ${ZPYTHON} 'zsh.setvalue("NOT_A_STRING_KEY", {1 : "abc"})'
+  ${ZPYTHON} 'zsh.setvalue("NOT_A_STRING_VALUE", {"abc" : 1})'
+1:Various errors: setvalue (hashes)
+# NOT_A_STRING_KEY
+*?Traceback*
+?*
+?TypeError:*
+# NOT_A_STRING_VALUE
+?Traceback*
+?*
+?TypeError:*
+
+  ${ZPYTHON} 'zsh.set_special_string("NO_ZPYTHON_STRING", "")'
+  ${ZPYTHON} 'zsh.set_special_integer("NO_ZPYTHON_INT", 0)'
+  ${ZPYTHON} 'zsh.set_special_float("NO_ZPYTHON_FLOAT", 0.0)'
+  ${ZPYTHON} 'zsh.set_special_array("NO_ZPYTHON_ARRAY", [])'
+  ${ZPYTHON} 'zsh.set_special_hash("NO_ZPYTHON_HASH", {})'
+  ${ZPYTHON} 'zsh.set_special_string("ZPYTHON", "")'
+1:Key errors: set_special_*
+# NO_ZPYTHON_STRING
+*?Traceback*
+?*
+?KeyError:*
+# NO_ZPYTHON_INT
+?Traceback*
+?*
+?KeyError:*
+# NO_ZPYTHON_FLOAT
+?Traceback*
+?*
+?KeyError:*
+# NO_ZPYTHON_ARRAY
+?Traceback*
+?*
+?KeyError:*
+# NO_ZPYTHON_HASH
+?Traceback*
+?*
+?KeyError:*
+# ZPYTHON
+?Traceback*
+?*
+?KeyError:*
+
+  ${ZPYTHON} 'zsh.set_special_integer("zpython_v", 0)'
+  ${ZPYTHON} 'zsh.set_special_string("zpython_v", "")'
+  ${ZPYTHON} 'zsh.set_special_integer("zpython_v", 0)'
+  ${ZPYTHON} 'zsh.set_special_float("zpython_v", 0.0)'
+  ${ZPYTHON} 'zsh.set_special_array("zpython_v", [])'
+  ${ZPYTHON} 'zsh.set_special_hash("zpython_v", {})'
+1:Runtime errors (occupied variable name): set_special_*
+# string
+*?Traceback*
+?*
+?RuntimeError:*
+# integer
+?Traceback*
+?*
+?RuntimeError:*
+# float
+?Traceback*
+?*
+?RuntimeError:*
+# array
+?Traceback*
+?*
+?RuntimeError:*
+# hash
+?Traceback*
+?*
+?RuntimeError:*
+
+  ${ZPYTHON} 'zsh.set_special_integer("zpython_int", [])'
+  ${ZPYTHON} 'zsh.set_special_float("zpython_flt", [])'
+  ${ZPYTHON} 'zsh.set_special_array("zpython_arr", 0)'
+  ${ZPYTHON} 'zsh.set_special_hash("zpython_hsh", 0)'
+1:Type errors (unimplemented protocols): set_special_*
+# integer
+*?Traceback*
+?*
+?TypeError:*
+# float
+?Traceback*
+?*
+?TypeError:*
+# array
+?Traceback*
+?*
+?TypeError:*
+# hash
+?Traceback*
+?*
+?TypeError:*
+
+  exe 'echo $zpython_hsh'
+  exe 'echo $zpython_hsh[2]'
+  exe 'zpython_hsh=(a b)'
+  exe 'zpython_hsh+=(a b)'
+  exe 'zpython_hsh[1]=""'
+1:
+# echo $zpython_hsh
+*?Traceback*
+?*
+?*
+?NotImplementedError
+?*:1:*iterator*
+?Traceback*
+?*
+?*
+?NotImplementedError
+# echo $zpython_hsh[2]
+?Traceback*
+?*
+?*
+?SystemError
+?*:1:*value object*
+?Traceback*
+?*
+?*
+?SystemError
+# zpython_hsh=(a b)
+?Traceback*
+?*
+?*
+?ValueError
+?*:1:*object keys*
+# zpython_hsh+=(a b)
+?TypeError:*
+?*:1:*set object*
+# zpython_hsh[1]=""
+?Traceback*
+?*
+?*
+?SystemError
+?*:1:*value object*
+?TypeError:*
+
+  ${ZPYTHON} 'zsh.set_special_hash("zpython_hsh2", EHash2())'
+  ${ZPYTHON} 'zsh.set_special_hash("zpython_hsh3", EHash3())'
+  ${ZPYTHON} 'zsh.set_special_string("zpython_str", EStr())'
+  ${ZPYTHON} 'zsh.set_special_integer("zpython_int", ENum())'
+  ${ZPYTHON} 'zsh.set_special_float("zpython_flt", ENum())'
+  exe 'echo $zpython_hsh2'
+  exe 'echo $zpython_hsh3'
+  exe 'echo $zpython_str'
+  exe 'echo $zpython_int'
+  exe 'echo $zpython_flt'
+  exe 'zpython_str=""'
+  exe 'zpython_int=2'
+  exe 'zpython_flt=2'
+1:
+# echo $zpython_hsh2
+*?Traceback*
+?*
+?*
+?NotImplementedError
+?*:1:*get value string*
+# echo $zpython_hsh3
+?*:1:*Key is not a string*
+# echo $zpython_str
+?Traceback*
+?*
+?*
+?NotImplementedError
+?*:1:*create string object*
+# echo $zpython_int
+?Traceback*
+?*
+?*
+?IndexError
+?*:1:*create int object*
+# echo $zpython_flt
+?Traceback*
+?*
+?*
+?KeyError
+?*:1:*create float object*
+# zpython_str=""
+?(Traceback*|*:1:*assign value for string*)
+?(*|Traceback*)
+?*
+?(KeyError|*)
+?(*:1:*assign value for string*|KeyError)
+# zpython_int=2
+?(Traceback*|*:1:*assign value for integer*)
+?(*|Traceback*)
+?*
+?(ValueError|*)
+?(*:1:*assign value for integer*|ValueError)
+# zpython_flt=2
+?(Traceback*|*:1:*assign value for float*)
+?(*|Traceback*)
+?*
+?(ValueError|*)
+?(*:1:*assign value for float*|ValueError)
+
+  ${ZPYTHON} 'zsh.set_special_array("zpython_arr", EArray())'
+  exe 'echo $zpython_arr'
+  exe 'zpython_arr=(a b c)'
+1:
+# echo $zpython_arr
+*?ValueError:*
+?*:1:*create array*
+# zpython_arr=(a b c)
+?(Traceback*|*:1:*assign value for array*)
+?(*|Traceback*)
+?*
+?(IndexError|*)
+?(*:1:*assign value for array*|IndexError)
+
+  ${ZPYTHON} 'zsh.setvalue("NULL_STRING", "\0")'
+  echo $(( #NULL_STRING ))
+  ${ZPYTHON} 'print(repr(zsh.getvalue("NULL_STRING")))'
+  ${ZPYTHON} 'd={};zsh.set_special_hash("ZPYTHON_NHSH", d)'
+  ZPYTHON_NHSH[$NULL_STRING]=$'\0\0'
+  ${ZPYTHON} 'print(repr(d))'
+  VALUE="${ZPYTHON_NHSH[$NULL_STRING]}"
+  echo $(( #VALUE ))
+  KEYS="${(k)ZPYTHON_NHSH}"
+  echo $(( #KEYS ))
+  set -A NULLS_ARRAY $'\0' $'a\0b'
+  ${ZPYTHON} 'print(repr(zsh.getvalue("NULLS_ARRAY")))'
+  typeset -A NULLS_HASH
+  NULLS_HASH=( $'\0a\0' $'b\0a' )
+  ${ZPYTHON} 'print(repr(zsh.getvalue("NULLS_HASH")))'
+0:Null in various strings
+*>0
+>(|b)'\\x00'
+>{(|b)'\\x00': (|b)'\\x00\\x00'}
+>0
+>0
+>\[(|b)'\\x00', (|b)'a\\x00b'\]
+>{(|b)'\\x00a\\x00': (|b)'b\\x00a'}
+
+  ${ZPYTHON} 'zsh.set_special_hash("ZPYTHON_DICT", {"a": "b", "c": "d"} if sys.version_info < (3,) else {b"a": b"b", b"c": b"d"})'
+  ${ZPYTHON} 'zsh.set_special_string("ZPYTHON_USTR", UStr())'
+  unset 'ZPYTHON_DICT[a]'
+  echo "${(kv)ZPYTHON_DICT}"
+  unset ZPYTHON_USTR
+0:unsets
+>c d
+?abc
+
+
+  zmodload -u lib${ZPYTHON}
+  for v in ZPYTHON_{{STRING,INT,FLOAT,ARRAY,HASH}{,2},ARRAY3} ; do
+    echo ${v}:${(P)v}
+  done
+# Ignoring stderr is needed for python with memory debugging enabled
+0D:Module unloading
+>ZPYTHON_STRING:
+>ZPYTHON_STRING2:
+>ZPYTHON_INT:
+>ZPYTHON_INT2:
+>ZPYTHON_FLOAT:
+>ZPYTHON_FLOAT2:
+>ZPYTHON_ARRAY:
+>ZPYTHON_ARRAY2:
+>ZPYTHON_HASH:
+>ZPYTHON_HASH2:
+>ZPYTHON_ARRAY3:
+
+  # zmodload -i lib${ZPYTHON}
+  echo "Currently module reloading is not supported"
+0: Module was loaded
+>Currently module reloading is not supported
+
+%clean

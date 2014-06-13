@@ -44,3 +44,13 @@ install(FILES "${PROJECT_BINARY_DIR}/zpython.1"
 add_library("${ZPYTHON_COMMAND_NAME}" MODULE ${ZPYTHON_SOURCES})
 install(TARGETS "${ZPYTHON_COMMAND_NAME}"
         DESTINATION ${ZSH_MODULES_OUTPUT_DIR})
+
+enable_testing()
+add_test(
+    NAME test
+    COMMAND ${ZSH_EXECUTABLE} +Z -f "${PROJECT_SOURCE_DIR}/test/runtest.zsh"
+                              "${ZSH_EXECUTABLE}"
+                              "${PROJECT_SOURCE_DIR}"
+                              "${PROJECT_BINARY_DIR}"
+                              "${ZPYTHON_COMMAND_NAME}"
+)
