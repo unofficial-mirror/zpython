@@ -48,12 +48,12 @@ FIND_PATH(ZSH_INCLUDE_DIR zsh/zsh.h
 
 # Determine Zsh version
 EXECUTE_PROCESS(
-  COMMAND zsh -fc "echo -n $ZSH_VERSION"
+  COMMAND ${ZSH_EXECUTABLE} -fc "echo -n $ZSH_VERSION"
   OUTPUT_VARIABLE ZSH_VERSION_STRING
 )
 
 EXECUTE_PROCESS(
-  COMMAND zsh -fc "echo -n $module_path[1]"
+  COMMAND ${ZSH_EXECUTABLE} -fc "echo -n $module_path[1]"
   OUTPUT_VARIABLE ZSH_MODULES_OUTPUT_DIR
 )
 
