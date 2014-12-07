@@ -61,6 +61,12 @@ class CArray(Array):
 try:
     from collections import OrderedDict
 except ImportError:
+    from collections import MutableMapping
+    from itertools import imap as _imap
+    try:
+        from thread import get_ident as _get_ident
+    except ImportError:
+        from dummy_thread import get_ident as _get_ident
     # From http://hg.python.org/cpython/rev/026ee0057e2d3305f90a9da41daf7c3f9eb1e814
     #
     # Stripped off documentation and comments
@@ -195,15 +201,6 @@ except ImportError:
 
         def __ne__(self, other):
             return not self == other
-
-        def viewkeys(self):
-            return KeysView(self)
-
-        def viewvalues(self):
-            return ValuesView(self)
-
-        def viewitems(self):
-            return ItemsView(self)
 
 class Hash(object):
     def accappend(self, a):
