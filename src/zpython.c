@@ -347,6 +347,19 @@ ZshGetValue(UNUSED(PyObject *self), PyObject *args)
     }
 }
 
+ZshExpand(UNUSED(PyObject *self), PyObject *args)
+{
+    char *str;
+    Eprog p;
+
+    if (!PyArg_ParseTuple(args, "s", &str))
+	return NULL;
+
+    if (!(p = parse_string(str, 1)))
+	return NULL;
+
+}
+
 #define FAIL_SETTING_ARRAY(val, arrlen, dealloc) \
 	if (dealloc != NULL) { \
 	    while (val-- > valstart) \
@@ -1292,6 +1305,9 @@ static struct PyMethodDef ZshMethods[] = {
 	"Throws KeyError   if identifier is invalid,\n"
 	"       IndexError if parameter was not found\n"
     },
+    {"expand", ZshExpand, METH_VARARGS,
+	"Perform all expansions on the given string and return the result (list\n"
+	"of arguments)."},
     {"setvalue", ZshSetValue, METH_VARARGS,
 	"Set parameter value. Use None to unset. Supported objects and corresponding\n"
 	"zsh parameter types:\n"

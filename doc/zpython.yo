@@ -56,6 +56,11 @@ Returns parameter value. Returned types: str for scalars, long integers for
 integers, float for floating-point integers, list of str for arrays and
 dict with str keys and values for associative arrays.
 )
+pindex(zsh.expand)
+item(tt(zsh.expand)LPAR()var(param)RPAR())(
+Perform all expansions on the given string and return the result LPAR()list
+of arguments RPAR().
+)
 pindex(zsh.setvalue)
 item(tt(zsh.setvalue)LPAR()var(param), var(value)RPAR())(
 Set parameter value. Supported types: str, long, int, dict and anything
