@@ -52,17 +52,20 @@
   ARRAY=(a b c d)
   typeset -A HASH
   HASH=(a b c d)
+  typeset -A EMPTY_HASH
   ${ZPYTHON} 'print(repr(zsh.getvalue("STRING")))'
   ${ZPYTHON} 'print(repr(zsh.getvalue("INT")))'
   ${ZPYTHON} 'print(repr(zsh.getvalue("FLOAT")))'
   ${ZPYTHON} 'print(repr(zsh.getvalue("ARRAY")))'
   ${ZPYTHON} 'print(repr(sorted(zsh.getvalue("HASH").items())))'
+  ${ZPYTHON} 'print(repr(sorted(zsh.getvalue("EMPTY_HASH").items())))'
 0:getvalue test
 *>(|b)'abc'
 >5(L|)
 >10.5
 >\[(|b)'a', (|b)'b', (|b)'c', (|b)'d'\]
 >\[\((|b)'a', (|b)'b'\), \((|b)'c', (|b)'d'\)\]
+>\[\]
 
   ${ZPYTHON} 'import sys'
   ${ZPYTHON} 'zsh.setvalue("STRING", "def")'
