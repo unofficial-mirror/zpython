@@ -268,23 +268,30 @@ get_hash(HashTable ht)
 {
     PyObject *hd;
 
-    if (hashdict) {
-	PyErr_SetString(PyExc_RuntimeError, "hashdict already used. "
-		"Do not try to get two hashes simultaneously in "
-		"separate threads, zsh is not thread-safe");
-	return NULL;
+    if (ht == NULL) {
+	hd = PyDict_New();
+    } else {
+	if (hashdict) {
+	    PyErr_SetString(PyExc_RuntimeError, "hashdict already used. "
+		    "Do not try to get two hashes simultaneously in "
+		    "separate threads, zsh is not thread-safe");
+	    return NULL;
+	}
+
+	hashdict = PyDict_New();
+	if (hashdict == NULL) {
+	    return NULL;
+	}
+	hd = hashdict;
+
+	scanhashtable(ht, 0, 0, 0, scanhashdict, 0);
+	if (hashdict == NULL) {
+	    Py_DECREF(hd);
+	    return NULL;
+	}
+
+	hashdict = NULL;
     }
-
-    hashdict = PyDict_New();
-    hd = hashdict;
-
-    scanhashtable(ht, 0, 0, 0, scanhashdict, 0);
-    if (hashdict == NULL) {
-	Py_DECREF(hd);
-	return NULL;
-    }
-
-    hashdict = NULL;
     return hd;
 }
 
