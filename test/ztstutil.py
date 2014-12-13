@@ -194,14 +194,6 @@ except ImportError:
                 self[key] = value
             return self
 
-        def __eq__(self, other):
-            if isinstance(other, OrderedDict):
-                return dict.__eq__(self, other) and all(_imap(_eq, self, other))
-            return dict.__eq__(self, other)
-
-        def __ne__(self, other):
-            return not self == other
-
 class Hash(object):
     def accappend(self, a):
         if self.acc and self.acc[-1][0] == a:
