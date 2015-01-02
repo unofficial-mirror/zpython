@@ -470,10 +470,20 @@
 >c d
 ?abc
 
+  export val="str"
+  ${ZPYTHON} 'print(repr(str(s(zsh.expand("$val")))))'
+  ${ZPYTHON} 'print(repr(str(s(zsh.expand("${val")))))'
+1:Expand
+>'str'
+?(eval):3: bad substitution
+?Traceback (most recent call last):
+?  File "<string>", line 1, in <module>
+?RuntimeError: Expand failed
+
   cd "$MODPATH"
-  ${ZPYTHON} 'print([s(i) for i in zsh.glob("glob/*")])'
+  ${ZPYTHON} 'print([str(s(i)) for i in zsh.glob("glob/*")])'
   setopt cshnullglob
-  ${ZPYTHON} 'print([s(i) for i in zsh.glob("glob/fail*")])'
+  ${ZPYTHON} 'print([str(s(i)) for i in zsh.glob("glob/fail*")])'
   true
 0:Glob
 >['glob/a', 'glob/b']
