@@ -354,6 +354,7 @@ ZshGetValue(UNUSED(PyObject *self), PyObject *args)
     }
 }
 
+static PyObject *
 ZshExpand(UNUSED(PyObject *self), PyObject *args)
 {
     char *str;
@@ -365,6 +366,8 @@ ZshExpand(UNUSED(PyObject *self), PyObject *args)
     if (!(p = parse_string(str, 1)))
 	return NULL;
 
+    PyErr_SetString(PyExc_NotImplementedError, "ZshExpand is not yet implemented");
+    return NULL;
 }
 
 #define FAIL_SETTING_ARRAY(val, arrlen, dealloc) \
