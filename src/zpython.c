@@ -359,20 +359,25 @@ ZshExpand(UNUSED(PyObject *self), PyObject *args)
 {
     char *str;
     char *ret;
+    int err;
     local_list1(list);
 
     if (!PyArg_ParseTuple(args, "s", &str))
 	return NULL;
-    init_list1(list, str);
-
-    prefork(&list, PREFORK_SINGLE);
-    if (errflag) {
-	PyErr_SetString(PyExc_RuntimeError, "Substitution failed");
+    ret = dupstring(str);
+    err = parsestrnoerr(ret);
+    if (err) {
+	if (err > 32 && err < 127)
+	    PyErr_Format(PyExc_ValueError, "Parse error near `%c'", err);
+	else
+	    PyErr_Format(PyExc_ValueError, "Parse error near byte 0x%x", err);
 	return NULL;
     }
-    ret = (char *) ugetnode(&list);
-    assert(!nonempty(&list));
-
+    singsub(&ret);
+    if (errflag) {
+	PyErr_SetString(PyExc_RuntimeError, "Expand failed");
+	return NULL;
+    }
     return get_string(ret);
 }
 
