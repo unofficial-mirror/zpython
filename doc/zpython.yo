@@ -58,8 +58,8 @@ dict with str keys and values for associative arrays.
 )
 pindex(zsh.expand)
 item(tt(zsh.expand)LPAR()var(param)RPAR())(
-Perform all expansions on the given string and return the result LPAR()list
-of arguments RPAR().
+Perform process substitution, parameter substitution and command substitution on 
+its argument and return the result.
 )
 pindex(zsh.setvalue)
 item(tt(zsh.setvalue)LPAR()var(param), var(value)RPAR())(

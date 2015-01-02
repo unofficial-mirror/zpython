@@ -358,16 +358,22 @@ static PyObject *
 ZshExpand(UNUSED(PyObject *self), PyObject *args)
 {
     char *str;
-    Eprog p;
+    char *ret;
+    local_list1(list);
 
     if (!PyArg_ParseTuple(args, "s", &str))
 	return NULL;
+    init_list1(list, str);
 
-    if (!(p = parse_string(str, 1)))
+    prefork(&list, PREFORK_SINGLE);
+    if (errflag) {
+	PyErr_SetString(PyExc_RuntimeError, "Substitution failed");
 	return NULL;
+    }
+    ret = (char *) ugetnode(&list);
+    assert(!nonempty(&list));
 
-    PyErr_SetString(PyExc_NotImplementedError, "ZshExpand is not yet implemented");
-    return NULL;
+    return get_string(ret);
 }
 
 #define FAIL_SETTING_ARRAY(val, arrlen, dealloc) \
@@ -1316,8 +1322,8 @@ static struct PyMethodDef ZshMethods[] = {
 	"       IndexError if parameter was not found\n"
     },
     {"expand", ZshExpand, METH_VARARGS,
-	"Perform all expansions on the given string and return the result (list\n"
-	"of arguments)."},
+	"Perform process substitution, parameter substitution and command substitution on\n"
+	"its argument and return the result."},
     {"setvalue", ZshSetValue, METH_VARARGS,
 	"Set parameter value. Use None to unset. Supported objects and corresponding\n"
 	"zsh parameter types:\n"
