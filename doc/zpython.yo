@@ -61,6 +61,10 @@ item(tt(zsh.expand)LPAR()var(param)RPAR())(
 Perform process substitution, parameter substitution and command substitution on 
 its argument and return the result.
 )
+pindex(zsh.glob)
+item(tt(zsh.glob)LPAR()var(param)RPAR())(
+Perform globbing on its argument and return the result as a list.
+)
 pindex(zsh.setvalue)
 item(tt(zsh.setvalue)LPAR()var(param), var(value)RPAR())(
 Set parameter value. Supported types: str, long, int, dict and anything

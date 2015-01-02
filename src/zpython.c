@@ -376,6 +376,49 @@ ZshExpand(UNUSED(PyObject *self), PyObject *args)
     return get_string(ret);
 }
 
+static PyObject *
+ZshGlob(UNUSED(PyObject *self), PyObject *args)
+{
+    char *str, *dup;
+    int list_len, i, err;
+    local_list1(list);
+    LinkNode node, next;
+    PyObject *ret;
+
+    if (!PyArg_ParseTuple(args, "s", &str))
+	return NULL;
+    dup = dupstring(str);
+    tokenize(dup);
+    init_list1(list, dup);
+
+    zglob(&list, firstnode(&list), 0);
+    if (badcshglob == 1) {
+	badcshglob = 0;
+	PyErr_SetString(PyExc_ValueError, "No match");
+	return NULL;
+    }
+    if (errflag) {
+	PyErr_SetString(PyExc_RuntimeError, "Globbing failed");
+	return NULL;
+    }
+    list_len = 0;
+    for (node = firstnode(&list); node; node = next) {
+	next = nextnode(node);
+	list_len++;
+    }
+    ret = PyList_New(list_len);
+    for (i = 0, node = firstnode(&list); i < list_len; node = next, i++) {
+	next = nextnode(node);
+	PyObject *item = get_string((char *) getdata(node));
+	if (item == NULL) {
+	    Py_DECREF(ret);
+	    return NULL;
+	}
+	PyList_SET_ITEM(ret, i, item);
+    }
+    return ret;
+}
+
 #define FAIL_SETTING_ARRAY(val, arrlen, dealloc) \
 	if (dealloc != NULL) { \
 	    while (val-- > valstart) \
@@ -1324,6 +1367,8 @@ static struct PyMethodDef ZshMethods[] = {
     {"expand", ZshExpand, METH_VARARGS,
 	"Perform process substitution, parameter substitution and command substitution on\n"
 	"its argument and return the result."},
+    {"glob", ZshGlob, METH_VARARGS,
+	"Perform globbing on its argument and return the result as a list."},
     {"setvalue", ZshSetValue, METH_VARARGS,
 	"Set parameter value. Use None to unset. Supported objects and corresponding\n"
 	"zsh parameter types:\n"
