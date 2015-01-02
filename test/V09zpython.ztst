@@ -470,6 +470,16 @@
 >c d
 ?abc
 
+  cd "$MODPATH"
+  ${ZPYTHON} 'print([s(i) for i in zsh.glob("glob/*")])'
+  setopt cshnullglob
+  ${ZPYTHON} 'print([s(i) for i in zsh.glob("glob/fail*")])'
+  true
+0:Glob
+>['glob/a', 'glob/b']
+?Traceback (most recent call last):
+?  File "<string>", line 1, in <module>
+?ValueError: No match
 
   zmodload -u lib${ZPYTHON}
   for v in ZPYTHON_{{STRING,INT,FLOAT,ARRAY,HASH}{,2},ARRAY3} ; do
