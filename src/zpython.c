@@ -1682,6 +1682,20 @@ static PyMethodDef EnvironMethods[] = {
     {NULL, NULL, 0, NULL},
 };
 
+static int
+EnvironContains(UNUSED(PyObject *self), PyObject *keyObject)
+{
+    char *var;
+
+    if (!(var = get_no_null_chars(keyObject)))
+	return -1;
+
+    if (zgetenv(var) == NULL)
+	return 0;
+    else
+	return 1;
+}
+
 static PyObject *
 EnvironItem(UNUSED(PyObject *self), PyObject *keyObject)
 {
@@ -1748,6 +1762,19 @@ static PyMappingMethods EnvironAsMapping = {
     (objobjargproc) EnvironAssItem,
 };
 
+static PySequenceMethods EnvironAsSeq = {
+    0,					/* sq_length */
+    0,					/* sq_concat */
+    0,					/* sq_repeat */
+    0,					/* sq_item */
+    0,					/* sq_slice */
+    0,					/* sq_ass_item */
+    0,					/* sq_ass_slice */
+    (objobjproc) EnvironContains,	/* sq_contains */
+    0,					/* sq_inplace_concat */
+    0,					/* sq_inplace_repeat */
+};
+
 typedef struct {
     PyObject_HEAD
 } EnvironObject;
@@ -1768,7 +1795,9 @@ init_types(void)
     EnvironType.tp_basicsize = sizeof(EnvironObject);
     EnvironType.tp_getattro = PyObject_GenericGetAttr;
     EnvironType.tp_methods = EnvironMethods;
+    EnvironType.tp_as_sequence = &EnvironAsSeq;
     EnvironType.tp_as_mapping = &EnvironAsMapping;
+    EnvironType.tp_iter = &EnvironKeys,
     EnvironType.tp_flags = Py_TPFLAGS_DEFAULT;
 
     if (PyType_Ready(&EnvironGeneratorType) == -1)
