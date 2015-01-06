@@ -190,6 +190,58 @@
 >i*2;[acc];[a]*3;[c]*2;[b];[b]=d;[acc]*2;k;![a];![b];[b]=d;i*2;[acc] d
 >def
 
+  export E=1
+  ${ZPYTHON} 'print(str(s(zsh.environ["E"])))'
+  echo 'In list'
+  ${ZPYTHON} 'print(b"E" in list(zsh.environ))'
+  echo 'In obj'
+  ${ZPYTHON} 'print(("E" in zsh.environ))'
+  echo 'copy instance'
+  ${ZPYTHON} 'print(isinstance(zsh.environ.copy(), dict))'
+  echo 'In keys'
+  ${ZPYTHON} 'print(b"E" in list(zsh.environ.keys()))'
+  echo 'In values'
+  ${ZPYTHON} 'print(b"1" in list(zsh.environ.values()))'
+  echo 'In items'
+  ${ZPYTHON} 'print((b"E", b"1") in list(zsh.environ.items()))'
+  ${ZPYTHON} 'print(str(s(zsh.environ.get("E"))))'
+  ${ZPYTHON} 'print(str(s(zsh.environ.get("E", 2))))'
+  ${ZPYTHON} 'zsh.environ.pop("E")'
+  echo "E:$E"
+  ${ZPYTHON} 'print(str(s(zsh.environ.get("E"))))'
+  ${ZPYTHON} 'print(str(s(zsh.environ.get("E", 2))))'
+  echo 'In obj'
+  ${ZPYTHON} 'print(("E" in zsh.environ))'
+0:Environ tests
+>1
+>In list
+>True
+>In obj
+>True
+>copy instance
+>True
+>In keys
+>True
+>In values
+>True
+>In items
+>True
+>1
+>1
+>E:
+>None
+>2
+>In obj
+>False
+
+  echo Index
+  ${ZPYTHON} $'try: zsh.environ["XXXXXXXXXXX"]\nexcept: print(sys.exc_info()[0].__name__)'
+  ${ZPYTHON} $'try: zsh.environ["\\0"]\nexcept: print(sys.exc_info()[0].__name__)'
+0:Environ errors
+>Index
+>KeyError
+>TypeError
+
   ${ZPYTHON} 'zsh.set_special_hash("zpython_hsh", EHash())'
   ${ZPYTHON} 'zsh.getvalue("NOT AN IDENTIFIER")'
   ${ZPYTHON} 'zsh.getvalue("XXX_UNKNOWN_PARAMETER")'
