@@ -1645,8 +1645,15 @@ get_no_null_chars(PyObject *string)
     }
     else {
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x03030000
-	if (!(str = PyUnicode_AsUTF8AndSize(string, NULL)))
+	Py_ssize_t size = 0;
+	if (!(str = PyUnicode_AsUTF8AndSize(string, &size)))
 	    return NULL;
+	if (strlen(str) != size) {
+	    assert(strlen(str) < size);
+	    PyErr_SetString(PyExc_TypeError,
+			    "NUL bytes are not allowed in a string");
+	    return NULL;
+	}
 #else
 	PyObject *bytes;
 	if (!(bytes = PyUnicode_AsUTF8String(string)))
