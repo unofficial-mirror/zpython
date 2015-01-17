@@ -524,10 +524,12 @@
 
   export val="str"
   ${ZPYTHON} 'print(repr(str(s(zsh.expand("$val")))))'
+  ${ZPYTHON} 'print(repr(str(s(zsh.expand("${:-}")))))'
   ${ZPYTHON} 'print(repr(str(s(zsh.expand("${val")))))'
 1:Expand
 >'str'
-?(eval):3: bad substitution
+>''
+?(eval):4: bad substitution
 ?Traceback (most recent call last):
 ?  File "<string>", line 1, in <module>
 ?RuntimeError: Expand failed

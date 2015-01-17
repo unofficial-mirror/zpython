@@ -374,6 +374,9 @@ ZshExpand(UNUSED(PyObject *self), PyObject *args)
 	return NULL;
     }
     singsub(&ret);
+    if (strcmp(ret, nulstring) == 0) {
+	ret = "";
+    }
     if (errflag) {
 	PyErr_SetString(PyExc_RuntimeError, "Expand failed");
 	return NULL;
