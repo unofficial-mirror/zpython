@@ -365,7 +365,7 @@ ZshExpand(UNUSED(PyObject *self), PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &str))
 	return NULL;
     ret = dupstring(str);
-    err = parsestrnoerr(ret);
+    err = parsestrnoerr(&ret);
     if (err) {
 	if (err > 32 && err < 127)
 	    PyErr_Format(PyExc_ValueError, "Parse error near `%c'", err);
