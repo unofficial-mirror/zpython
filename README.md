@@ -45,13 +45,7 @@ Zpython supports the following variants of building:
     zsh can find it: under any directory listed in `$module_path` array.
 
     You may use this variant with any zsh assuming you can get relevant 
-    `config.h` (note: on debian there is a package that installs zsh headers, 
-    but it is completely useless because it does not install `config.h` which 
-    contains some necessary defines, neither it does install `zsh.mdh` which 
-    includes everything module needs. I can live without `zsh.mdh`, but living 
-    without `config.h` requires taking checks from zsh autocrap and rewriting 
-    them with cmake without any guarantee that this will continue to work after 
-    update due to another `#define` added).
+    `config.h`.
 2. If you have built your own zsh version then another variant is available: use
 
         mkdir build
